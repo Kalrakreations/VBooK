@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>VBook — Futuristic Form</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <div class="lock-shell">
+    <div class="lock-center" id="internalLoginBtn" title="Internal Mode (locked)">
+      <svg class="lock-icon" viewBox="0 0 24 24" width="48" height="48" aria-hidden="true">
+        <path fill="currentColor" d="M17 8V7a5 5 0 0 0-10 0v1H5v11h14V8h-2zM9 7a3 3 0 0 1 6 0v1H9V7zM7 10h10v7H7v-7z"/>
+      </svg>
+      <div class="lock-text">Internal</div>
+    </div>
+  </div>
+
+  <section class="card frosted" id="visitorCard">
+    <h1 class="title">VBook</h1>
+    <p class="subtitle">Fast. Smart. Future-ready.</p>
+
+    <div class="mode-row">
+      <label class="mode-pill active" id="modeVisitor">Visitor Mode</label>
+      <label class="mode-pill" id="modeInternal">Internal Mode</label>
+    </div>
+
+    <form id="vbookForm" class="form">
+      <input type="hidden" name="latitude">
+      <input type="hidden" name="longitude">
+      <input type="hidden" name="ipAddress">
+      <input type="hidden" name="deviceInfo">
+      <input type="hidden" name="deviceModel">
+      <input type="hidden" name="browserInfo">
+
+      <div class="row">
+        <label class="field">
+          <span>Name</span>
+          <input type="text" name="name" id="name" autocomplete="name" required>
+        </label>
+        <label class="field">
+          <span>Phone</span>
+          <input type="tel" name="phone" id="phone" autocomplete="tel" required>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" id="email" autocomplete="email">
+        </label>
+        <label class="field">
+          <span>Company</span>
+          <input type="text" name="company" id="company" autocomplete="organization">
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Designation</span>
+          <input type="text" name="designation" id="designation">
+        </label>
+        <label class="field">
+          <span>Business Type</span>
+          <select name="business" id="business" required></select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>Country</span>
+          <select name="country" id="country"></select>
+        </label>
+        <label class="field">
+          <span>State</span>
+          <select name="state" id="state"></select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field">
+          <span>City</span>
+          <select name="city" id="city"></select>
+        </label>
+        <label class="field">
+          <span>Remarks</span>
+          <input type="text" name="remarks" id="remarks">
+        </label>
+      </div>
+
+      <div class="row actions">
+        <button type="submit" class="btn btn-blue" id="submitBtn">Submit</button>
+        <button type="button" class="btn btn-ghost" id="skipBtn">Skip</button>
+      </div>
+    </form>
+
+    <div class="suggestions" id="suggestions" aria-hidden="true"></div>
+    <p class="small muted">Powered by VBook — No tracking without consent. GPS asked once for better accuracy.</p>
+  </section>
+</main>
+
+<!-- Internal login modal -->
+<div class="modal" id="loginModal" aria-hidden="true">
+  <div class="modal-card frosted">
+    <h3>Internal Mode Login</h3>
+    <p>Enter password to unlock fast multi-entry mode.</p>
+    <input id="internalPassword" type="password" placeholder="Password">
+    <div class="modal-actions">
+      <button id="internalUnlock" class="btn btn-blue">Unlock</button>
+      <button id="modalClose" class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COUNTRIES = ["India", "United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "United Arab Emirates", "Singapore", "Japan"];
+const INDIAN_STATES = {"Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool"], "Arunachal Pradesh": ["Itanagar", "Tawang", "Ziro", "Passighat", "Naharlagun"], "Assam": ["Guwahati", "Jorhat", "Dibrugarh", "Silchar", "Nagaon"], "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia"], "Chhattisgarh": ["Raipur", "Bilaspur", "Korba", "Raigarh", "Durg"], "Goa": ["Panaji", "Margao", "Vasco da Gama", "Ponda", "Mapusa"], "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar"], "Haryana": ["Gurugram", "Faridabad", "Panipat", "Karnal", "Rohtak"], "Himachal Pradesh": ["Shimla", "Dharamshala", "Manali", "Solan", "Kullu"], "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Giridih"], "Karnataka": ["Bengaluru", "Mysore", "Mangalore", "Hubli", "Belgaum"], "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Alappuzha"], "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Sagar"], "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"], "Manipur": ["Imphal", "Churachandpur", "Thoubal", "Moirang", "Senapati"], "Meghalaya": ["Shillong", "Tura", "Nongpoh", "Nongstoin", "Williamnagar"], "Mizoram": ["Aizawl", "Lunglei", "Champhai", "Kolasib", "Saitual"], "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Mon", "Tuensang"], "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur"], "Punjab": ["Chandigarh", "Ludhiana", "Amritsar", "Jalandhar", "Patiala"], "Rajasthan": ["Jaipur", "Udaipur", "Jodhpur", "Kota", "Ajmer"], "Sikkim": ["Gangtok", "Namchi", "Geyzing", "Mangan", "Rangpo"], "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"], "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"], "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Jogendranagar", "Khowai"], "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Agra", "Varanasi"], "Uttarakhand": ["Dehradun", "Haridwar", "Nainital", "Roorkee", "Haldwani"], "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Siliguri", "Asansol"]};
+const BUSINESS_TYPES = [{"type": "Digital Marketing", "dept": "E-Commerce", "person": "Sahil"}, {"type": "Ecommerce Services", "dept": "E-Commerce", "person": "Sahil"}, {"type": "Exporter", "dept": "B2B", "person": "Adhiraj"}, {"type": "International Certification", "dept": "B2B", "person": "Adhiraj"}, {"type": "Trader", "dept": "General Trade", "person": "Amit"}, {"type": "Retailer", "dept": "General Trade", "person": "Amit"}, {"type": "Wholesaler", "dept": "General Trade", "person": "Amit"}, {"type": "Distributor", "dept": "General Trade", "person": "Amit"}, {"type": "Marketing", "dept": "Marketing", "person": "Arsh"}, {"type": "Quality", "dept": "Quality", "person": "Neha"}, {"type": "Hotels", "dept": "Sales", "person": "Yogesh"}, {"type": "HOReCa", "dept": "Sales", "person": "Yogesh"}, {"type": "Manufacturing", "dept": "Operations", "person": "Rohan"}, {"type": "IT Services", "dept": "Technology", "person": "Priya"}, {"type": "Software", "dept": "Technology", "person": "Priya"}, {"type": "Logistics", "dept": "Operations", "person": "Vikram"}, {"type": "Healthcare", "dept": "Medical", "person": "Dr. Mehra"}, {"type": "Pharmaceuticals", "dept": "Medical", "person": "Dr. Mehra"}, {"type": "Education", "dept": "Education", "person": "Simran"}, {"type": "Consulting", "dept": "Consulting", "person": "Ritika"}, {"type": "Real Estate", "dept": "Sales", "person": "Karan"}, {"type": "Finance", "dept": "Finance", "person": "Anil"}, {"type": "Agriculture", "dept": "Agriculture", "person": "Deepak"}, {"type": "FMCG", "dept": "Sales", "person": "Neha"}, {"type": "Automotive", "dept": "Engineering", "person": "Rakesh"}, {"type": "Legal Services", "dept": "Legal", "person": "Adv. Sharma"}, {"type": "Event Management", "dept": "Marketing", "person": "Arsh"}, {"type": "Design Studio", "dept": "Creative", "person": "Ankita"}, {"type": "Construction", "dept": "Operations", "person": "Rakesh"}];
+</script>
+<script src="script.js"></script>
+</body>
+</html>
