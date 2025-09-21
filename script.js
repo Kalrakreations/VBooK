@@ -1,5 +1,5 @@
 // VBook JS Logic
-const modePassword = 'vbook2025'; // example internal mode password
+const modePassword = 'Unlock@123'; // example internal mode password
 let mode = 'visitor';
 
 const countries = ["India","USA","UK","Canada","Australia","Germany","France","Japan","China","Brazil"];
